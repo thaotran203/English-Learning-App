@@ -1,6 +1,11 @@
 import React, { useRef, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
-
+import {
+    Animated,
+    ScrollView,
+    StyleSheet,
+    TouchableOpacity,
+    View,
+} from 'react-native';
 
 interface ScrollToTopProps {
   children: React.ReactNode;
@@ -9,10 +14,21 @@ interface ScrollToTopProps {
 export default function ScrollToTop({ children }: ScrollToTopProps) {
   const scrollViewRef = useRef<ScrollView>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const handleScroll = (event: any) => {
     const scrollY = event.nativeEvent.contentOffset.y;
-    setShowScrollTop(scrollY > 300);
+    const shouldShow = scrollY > 300;
+
+    if (shouldShow !== showScrollTop) {
+      setShowScrollTop(shouldShow);
+
+      Animated.timing(fadeAnim, {
+        toValue: shouldShow ? 1 : 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
   };
 
   const scrollToTop = () => {
@@ -26,11 +42,35 @@ export default function ScrollToTop({ children }: ScrollToTopProps) {
     <View style={styles.container}>
       <ScrollView
         ref={scrollViewRef}
-        style={styles.scrollView}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
+        style={styles.scrollView}
       >
         {children}
       </ScrollView>
+
+      <Animated.View
+        style={[
+          styles.scrollToTopButton,
+          {
+            opacity: fadeAnim,
+            transform: [
+              {
+                scale: fadeAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.8, 1],
+                }),
+              },
+            ],
+          },
+        ]}
+        pointerEvents={showScrollTop ? 'auto' : 'none'}
+      >
+        <TouchableOpacity onPress={scrollToTop} style={styles.button}>
+          {/* icon thêm ở commit 4 */}
+        </TouchableOpacity>
+      </Animated.View>
     </View>
   );
 }
@@ -41,5 +81,16 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  scrollToTopButton: {
+    position: 'absolute',
+    bottom: 30,
+    right: 20,
+  },
+  button: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#22c55e',
   },
 });
