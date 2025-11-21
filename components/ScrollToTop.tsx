@@ -1,3 +1,5 @@
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Ionicons } from '@expo/vector-icons';
 import React, { useRef, useState } from 'react';
 import {
     Animated,
@@ -12,6 +14,8 @@ interface ScrollToTopProps {
 }
 
 export default function ScrollToTop({ children }: ScrollToTopProps) {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
   const scrollViewRef = useRef<ScrollView>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -22,7 +26,6 @@ export default function ScrollToTop({ children }: ScrollToTopProps) {
 
     if (shouldShow !== showScrollTop) {
       setShowScrollTop(shouldShow);
-
       Animated.timing(fadeAnim, {
         toValue: shouldShow ? 1 : 0,
         duration: 300,
@@ -49,10 +52,11 @@ export default function ScrollToTop({ children }: ScrollToTopProps) {
       >
         {children}
       </ScrollView>
-
+      
       <Animated.View
         style={[
           styles.scrollToTopButton,
+          isDark && styles.scrollToTopButtonDark,
           {
             opacity: fadeAnim,
             transform: [
@@ -67,8 +71,16 @@ export default function ScrollToTop({ children }: ScrollToTopProps) {
         ]}
         pointerEvents={showScrollTop ? 'auto' : 'none'}
       >
-        <TouchableOpacity onPress={scrollToTop} style={styles.button}>
-          {/* icon thêm ở commit 4 */}
+        <TouchableOpacity
+          onPress={scrollToTop}
+          style={[styles.button, isDark && styles.buttonDark]}
+          activeOpacity={0.8}
+        >
+          <Ionicons 
+            name="chevron-up" 
+            size={24} 
+            color="#fff" 
+          />
         </TouchableOpacity>
       </Animated.View>
     </View>
@@ -86,11 +98,30 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 30,
     right: 20,
+    zIndex: 1000,
+  },
+  scrollToTopButtonDark: {
+    // Dark theme specific styles if needed
   },
   button: {
     width: 50,
     height: 50,
     borderRadius: 25,
     backgroundColor: '#22c55e',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  buttonDark: {
+    backgroundColor: '#22c55e',
+    shadowColor: '#fff',
+    shadowOpacity: 0.1,
   },
 });
