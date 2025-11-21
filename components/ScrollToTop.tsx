@@ -1,5 +1,6 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
+
 
 interface ScrollToTopProps {
   children: React.ReactNode;
@@ -7,6 +8,19 @@ interface ScrollToTopProps {
 
 export default function ScrollToTop({ children }: ScrollToTopProps) {
   const scrollViewRef = useRef<ScrollView>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  const handleScroll = (event: any) => {
+    const scrollY = event.nativeEvent.contentOffset.y;
+    setShowScrollTop(scrollY > 300);
+  };
+
+  const scrollToTop = () => {
+    scrollViewRef.current?.scrollTo({
+      y: 0,
+      animated: true,
+    });
+  };
 
   return (
     <View style={styles.container}>
